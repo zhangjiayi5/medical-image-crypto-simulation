@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 
 from crypto_utils import (
     prepare_image,
@@ -18,10 +19,10 @@ st.title("Modos de cifrado AES")
 st.markdown(
     """
     <p style="
-        font-size:22px;
+        font-size:20px;
         color:#475569;
-        margin-top:-10px;
-        margin-bottom:30px;
+        margin-top:-12px;
+        margin-bottom:15px;
     ">
         Comparación visual de ECB, CBC, CTR, CFB y OCB
     </p>
@@ -92,64 +93,81 @@ recovered_image = bytes_to_image(
 # IMÁGENES
 # ------------------------------------------------------------
 
-st.divider()
-
 col1, col2, col3 = st.columns(3)
 
 
 with col1:
 
-    st.subheader("Original")
+    st.markdown("#### Original")
 
     st.image(
         image,
         caption="MRI original",
-        use_container_width=True
+        width=300
     )
 
 
 with col2:
 
-    st.subheader(f"Cifrada — {selected_mode}")
+    st.markdown(f"#### Cifrada — {selected_mode}")
 
     st.image(
         encrypted_image,
         caption=f"AES-{selected_mode}",
-        use_container_width=True
+        width=300
     )
 
 
 with col3:
 
-    st.subheader("Recuperada")
+    st.markdown("#### Recuperada")
 
     st.image(
         recovered_image,
         caption="MRI descifrada",
-        use_container_width=True
+        width=300
     )
 
 
 # ------------------------------------------------------------
-# RESULTADO
+# HISTOGRAMA
+# ------------------------------------------------------------
+
+st.markdown("#### Distribución de píxeles de la imagen cifrada")
+
+encrypted_pixels = np.frombuffer(
+    ciphertext,
+    dtype=np.uint8
+)
+
+histogram, _ = np.histogram(
+    encrypted_pixels,
+    bins=256,
+    range=(0, 256)
+)
+
+st.bar_chart(
+    histogram,
+    height=430,
+    x_label="Valor del píxel",
+    y_label="Frecuencia"
+)
+
+
+# ------------------------------------------------------------
+# CONCLUSIÓN
 # ------------------------------------------------------------
 
 if selected_mode == "ECB":
 
     st.warning(
-        "ECB conserva patrones de la imagen original."
+        "ECB conserva patrones visuales de la imagen y presenta "
+        "una distribución menos uniforme."
     )
 
 else:
 
     st.success(
-        f"{selected_mode} oculta los patrones visuales "
-        "de la imagen original."
-    )
-
-
-if decrypted_bytes == image_bytes:
-
-    st.success(
-        "La imagen se recupera exactamente después del descifrado."
+        f"{selected_mode} oculta los patrones visuales y presenta "
+        "una distribución más uniforme."
     )
